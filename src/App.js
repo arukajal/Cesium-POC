@@ -1,23 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+// src/App.js
+import React, { useState } from 'react';
+import FileInput from './components/FileInput';
+import CesiumMap from './components/CesiumMap';
 
 function App() {
+  const [geojsonData, setGeojsonData] = useState(null);
+
+  const handleFileUpload = (data) => {
+    setGeojsonData(data);
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1>Cesium File App</h1>
+      <FileInput onFileUpload={handleFileUpload} />
+      {geojsonData && <CesiumMap geojsonData={geojsonData} />}
     </div>
   );
 }
