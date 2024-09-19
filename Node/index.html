@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <script src="https://cesium.com/downloads/cesiumjs/releases/1.108/Build/Cesium/Cesium.js"></script>
+    <link href="https://cesium.com/downloads/cesiumjs/releases/1.108/Build/Cesium/Widgets/widgets.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.4/xlsx.full.min.js"></script>
+
+    <style>
+        body {
+            text-align: center; 
+            margin: 0;
+            padding: 0;
+            height: 100vh; 
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        header {
+            background-color: #333;
+            color: #fff;
+            padding: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Tower Visulization System</h1>
+    </header>
+    <button id="loadDataButton">Load Models</button>
+    <br>
+    <div id="cesiumContainer" style="height: 700px;"></div>
+
+    <script>
+        var latLngArray = [];
+        var viewer;
+        Cesium.Ion.defaultAccessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiIyODc3MjliOS0xN2Q3LTQ4NTgtYjY3OC02YWEwYTFhNzE4YzYiLCJpZCI6MTYzNDc5LCJpYXQiOjE2OTMzNzYzNjZ9.H2GC_PvVkzP4_yOnwQaFbgZSYVUVZhOVvokYmJq8tkk'; // Replace with your Cesium Ion token
+
+        function initCesiumViewer() {
+            viewer = new Cesium.Viewer('cesiumContainer', {
+                terrain: Cesium.Terrain.fromWorldTerrain(),
+            });
+
+            if (latLngArray.length > 0) {
+                latLngArray.forEach((entry, index) => {
+                    loadModel(entry.modelPath, entry.latitude, entry.longitude, entry.elevation, index);
+                });
+            }
+            console.log('lat', latLngArray);
+        }
+        const loadedModels = [];
+        console.log('latlng', latLngArray);
+
+
+
+
+async function loadModel(modelPath, latitude, longitude, elevation, modelCounter) {
+  console.log('Loading model:', modelPath);
+  console.log('lat', latitude);
+  console.log('lng', longitude);
+  console.log('lng', elevation);
+  try {
+
+    const position = Cesium.Cartesian3.fromDegrees(longitude, latitude, elevation );
+    const orientation = Cesium.Transforms.headingPitchRollQuaternion(
+      position,
+      Cesium.HeadingPitchRoll.fromDegrees(135, 0, 0)
+    );
+    const entity = viewer.entities.add({
+      name: `3D Model ${modelCounter + 1}`,
+      position: position,
+      orientation: orientation,
+      model: {
+        uri: modelPath,
+        scale: 1.0,
+        // minimumPixelSize: 64,
+      },
+    });
+
+    loadedModels.push(entity);
+    viewer.zoomTo(entity);
+  } catch (error) {
+    console.error('Error loading model:', error);
+  }
+}
+
+
+        document.getElementById('loadDataButton').addEventListener('click', function () {
+            fetch('/data')
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Received data:', data);
+                    latLngArray = data;
+                    initCesiumViewer();
+                })
+                .catch(error => {
+                    console.error('Error fetching data:', error);
+                });
+        });
+    </script>
+</body>
+</html>
